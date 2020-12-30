@@ -1,0 +1,109 @@
+
+<div class="input-group mr10 w150">
+    <select id="province" name="province" class="form-control valid w150">
+        <option value="0">选择省份</option>
+        {volist name='province_list' id='v'}
+        <option value="{$v['id']}" {eq name="province_id" value="$v['id']"}selected{/eq}>{$v['name']}</option>
+        {/volist}
+    </select>
+</div>
+<div class="input-group mr10 w150">
+    <select id="city" name="city" class="form-control valid">
+        <option value="0">选择市</option>
+        {volist name='city_list' id='v'}
+        <option value="{$v['id']}" {eq name="city_id" value="$v['id']"}selected{/eq}>{$v['name']}</option>
+        {/volist}
+    </select>
+</div>
+
+{gt name="region_level" value='2'}
+<div class="input-group mr10 w150" >
+    <select id="area" name="area" class="form-control valid">
+        <option value="0">选择区县</option>
+        {volist name='area_list' id='v'}
+        <option value="{$v['id']}" {eq name="area_id" value="$v['id']"}selected{/eq}>{$v['name']}</option>
+        {/volist}
+    </select>
+</div>
+{/gt}
+
+{gt name="region_level" value='3'}
+<div class="input-group mr10 w150" >
+    <select id="street" name="street" class="form-control valid">
+        <option value="0">选择街道</option>
+        {volist name='street_list' id='v'}
+        <option value="{$key}" {eq name="street_id" value="$key"}selected{/eq}>{$v}</option>
+        {/volist}
+    </select>
+</div>
+{/gt}
+
+<?php
+    $domain = request()->domain().'/public/static/hlcom_org/code/';
+?>
+<script>
+    
+    //省份改变城市、区
+    $('select[name=province]').change(function(){
+        var v = $(this).val();
+        
+        if(v==0) {
+            $('select[name=city] option:eq(0)').siblings('option').remove();
+            $('select[name=area] option:eq(0)').siblings('option').remove();
+            return;
+        }
+        $('select[name=city] option').remove();
+        $('select[name=area] option').remove();
+        //改变城市
+        $.post("{:url('Systems/getCityCArea')}",{id:v},function(data){
+            $('select[name=city]').append('<option value="0">选择市</option>');
+            for(var i=0;i<data.length;i++){
+                $('select[name=city]').append("<option value="+data[i]['id']+">"+data[i]['name']+"</option>");
+            }
+           
+            $('select[name=area] option').remove();
+            $('select[name=area]').append('<option value="0">选择区县</option>');
+
+            $('select[name=street] option').remove();
+            $('select[name=street]').append('<option value="0">选择街道</option>');
+           
+
+        },'json');
+
+
+       
+    })
+    //省份改变城市、区
+    $('select[name=city]').change(function(){
+        var v = $(this).val();
+        console.log(v);
+        if(v==0) {$('select[name=area] option:eq(0)').siblings('option').remove();return;}
+        //改变城市
+        $('select[name=area] option').remove();
+        $.post("{:url('Systems/getCityCArea')}",{id:v},function(data){
+            $('select[name=area]').append('<option value="0">选择区县</option>');
+            for(var i=0;i<data.length;i++){
+                $('select[name=area]').append("<option value="+data[i]['id']+">"+data[i]['name']+"</option>");
+            }
+        },'json');
+
+        $('select[name=street] option').remove();
+        $('select[name=street]').append('<option value="0">选择街道</option>');
+    })
+
+    var domain ="{$domain}";
+    $('select[name=area]').change(function(){
+        var v = $(this).val();
+        console.log(v);
+        if(v==0) {$('select[name=street] option:eq(0)').siblings('option').remove();return;}
+        //改变城市
+        $('select[name=street] option').remove();
+        $.post(domain+v+'.json','',function(data){
+            $('select[name=street]').append('<option value="0">选择街道</option>');
+            for(i in data){
+                $('select[name=street]').append("<option value="+[i]+">"+data[i]+"</option>");
+            }
+        },'json');
+    })
+
+</script>
